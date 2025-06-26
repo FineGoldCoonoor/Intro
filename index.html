@@ -1,107 +1,166 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>MindAR Multi-Target Demo</title>
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.6/dist/mindar-image-aframe.prod.js"></script>
-    <style>
-      body { margin: 0; overflow: hidden; }
-      #overlayButton, #locationButton {
-        position: absolute;
-        bottom: 20px;
-        left: 50%;
-        transform: translateX(-50%);
-        padding: 12px 20px;
-        background: #ffd700;
-        color: #000;
-        font-weight: bold;
-        border: none;
-        border-radius: 8px;
-        display: none;
-        cursor: pointer;
-        z-index: 10;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Buttons for targets 3 and 4 -->
-    <button id="overlayButton">Open Link</button>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #playPauseContainer,
+    #linkButtonContainer,
+    #locationButtonContainer {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      z-index: 999;
+      display: none;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #FFD700;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .a-enter-vr-button {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Play Button for video -->
+  <div id="playPauseContainer">
+    <button id="playPauseButton">Play with Audio</button>
+  </div>
+
+  <!-- Link Button for target 3 -->
+  <div id="linkButtonContainer">
+    <button id="linkButton">Go to Website</button>
+  </div>
+
+  <!-- Location Button for target 4 -->
+  <div id="locationButtonContainer">
     <button id="locationButton">Open Location</button>
+  </div>
 
-    <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: true">
-      
-      <a-assets>
-        <video id="video1" src="video1.mp4" preload="auto" crossorigin="anonymous"></video>
-        <video id="video2" src="video2.mp4" preload="auto" crossorigin="anonymous"></video>
-      </a-assets>
+  <!-- AR Scene -->
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
 
-      <!-- Target 1: Play Video 1 -->
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-video src="#video1" width="1" height="0.5625" position="0 0 0"></a-video>
-      </a-entity>
+    <a-assets>
+      <video id="video1" src="video1.mp4" playsinline loop></video>
+      <video id="video2" src="video2.mp4" playsinline loop></video>
+    </a-assets>
 
-      <!-- Target 2: Play Video 2 -->
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-video src="#video2" width="1" height="0.5625" position="0 0 0"></a-video>
-      </a-entity>
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Target 3: Show link button -->
-      <a-entity mindar-image-target="targetIndex: 2" id="linkTarget">
-        <a-plane color="#FFD700" width="0.5" height="0.2" position="0 0 0"></a-plane>
-      </a-entity>
+    <!-- Target 1: video -->
+    <a-entity id="target1" mindar-image-target="targetIndex: 0">
+      <a-plane position="0 0 0" height="1.2" width="2" material="src: #video1"></a-plane>
+    </a-entity>
 
-      <!-- Target 4: Show location button -->
-      <a-entity mindar-image-target="targetIndex: 3" id="locationTarget">
-        <a-plane color="#FFD700" width="0.5" height="0.2" position="0 0 0"></a-plane>
-      </a-entity>
+    <!-- Target 2: video -->
+    <a-entity id="target2" mindar-image-target="targetIndex: 1">
+      <a-plane position="0 0 0" height="1.2" width="2" material="src: #video2"></a-plane>
+    </a-entity>
 
-      <a-camera position="0 0 0"></a-camera>
-    </a-scene>
+    <!-- Target 3: show link button -->
+    <a-entity id="target3" mindar-image-target="targetIndex: 2"></a-entity>
 
-    <script>
-      const video1 = document.querySelector("#video1");
-      const video2 = document.querySelector("#video2");
-      const overlayButton = document.getElementById("overlayButton");
-      const locationButton = document.getElementById("locationButton");
+    <!-- Target 4: show location button -->
+    <a-entity id="target4" mindar-image-target="targetIndex: 3"></a-entity>
+  </a-scene>
 
-      const sceneEl = document.querySelector("a-scene");
+  <script>
+    const videos = {
+      target1: document.querySelector('#video1'),
+      target2: document.querySelector('#video2')
+    };
 
-      sceneEl.addEventListener("targetFound", (event) => {
-        const index = event.detail.index;
+    const targets = {
+      target1: document.querySelector('#target1'),
+      target2: document.querySelector('#target2'),
+      target3: document.querySelector('#target3'),
+      target4: document.querySelector('#target4')
+    };
 
-        if (index === 0) {
-          video1.play();
-        } else if (index === 1) {
-          video2.play();
-        } else if (index === 2) {
-          overlayButton.style.display = "block";
-        } else if (index === 3) {
-          locationButton.style.display = "block";
+    const playPauseButton = document.querySelector('#playPauseButton');
+    const playPauseContainer = document.querySelector('#playPauseContainer');
+    const linkButtonContainer = document.querySelector('#linkButtonContainer');
+    const locationButtonContainer = document.querySelector('#locationButtonContainer');
+    const linkButton = document.querySelector('#linkButton');
+    const locationButton = document.querySelector('#locationButton');
+
+    let currentTargetId = null;
+    let isPlaying = false;
+
+    playPauseButton.addEventListener('click', () => {
+      if (currentTargetId && (currentTargetId === 'target1' || currentTargetId === 'target2')) {
+        const currentVideo = videos[currentTargetId];
+        if (isPlaying) {
+          currentVideo.pause();
+          playPauseButton.textContent = 'Play with Audio';
+        } else {
+          currentVideo.play();
+          playPauseButton.textContent = 'Pause';
+        }
+        isPlaying = !isPlaying;
+      }
+    });
+
+    linkButton.addEventListener('click', () => {
+      window.open(' https://finegoldcoonoor.github.io/VP-STREET/', '_blank');
+    });
+
+    locationButton.addEventListener('click', () => {
+      window.open('https://maps.app.goo.gl/iisfZKPDecXVo9PGA', '_blank');
+    });
+
+    Object.entries(targets).forEach(([id, targetEntity]) => {
+      targetEntity.addEventListener('targetFound', () => {
+        currentTargetId = id;
+        // Hide all containers first
+        playPauseContainer.style.display = 'none';
+        linkButtonContainer.style.display = 'none';
+        locationButtonContainer.style.display = 'none';
+        isPlaying = false;
+        playPauseButton.textContent = 'Play with Audio';
+
+        if (id === 'target1' || id === 'target2') {
+          playPauseContainer.style.display = 'block';
+        } else if (id === 'target3') {
+          linkButtonContainer.style.display = 'block';
+        } else if (id === 'target4') {
+          locationButtonContainer.style.display = 'block';
         }
       });
 
-      sceneEl.addEventListener("targetLost", (event) => {
-        const index = event.detail.index;
-
-        if (index === 0) {
-          video1.pause();
-        } else if (index === 1) {
-          video2.pause();
-        } else if (index === 2) {
-          overlayButton.style.display = "none";
-        } else if (index === 3) {
-          locationButton.style.display = "none";
+      targetEntity.addEventListener('targetLost', () => {
+        if (id === 'target1' || id === 'target2') {
+          const video = videos[id];
+          video.pause();
+        }
+        // Hide all buttons when target is lost
+        playPauseContainer.style.display = 'none';
+        linkButtonContainer.style.display = 'none';
+        locationButtonContainer.style.display = 'none';
+        isPlaying = false;
+        playPauseButton.textContent = 'Play with Audio';
+        if (currentTargetId === id) {
+          currentTargetId = null;
         }
       });
-
-      overlayButton.onclick = () => {
-        window.open("https://finegoldcoonoor.github.io/VP-STREET/", "_blank");
-      };
-
-      locationButton.onclick = () => {
-        window.open("https://maps.app.goo.gl/iisfZKPDecXVo9PGA", "_blank");
-      };
-    </script>
-  </body>
+    });
+  </script>
+</body>
 </html>
