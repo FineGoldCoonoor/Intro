@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MindAR Multi-Target Demo</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.6/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #overlayButton, #locationButton {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 12px 20px;
+        background: #ffd700;
+        color: #000;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        display: none;
+        cursor: pointer;
+        z-index: 10;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Buttons for targets 3 and 4 -->
+    <button id="overlayButton">Open Link</button>
+    <button id="locationButton">Open Location</button>
+
+    <a-scene mindar-image="imageTargetSrc: targets.mind; autoStart: true;" vr-mode-ui="enabled: false" device-orientation-permission-ui="enabled: true">
+      
+      <a-assets>
+        <video id="video1" src="video1.mp4" preload="auto" crossorigin="anonymous"></video>
+        <video id="video2" src="video2.mp4" preload="auto" crossorigin="anonymous"></video>
+      </a-assets>
+
+      <!-- Target 1: Play Video 1 -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-video src="#video1" width="1" height="0.5625" position="0 0 0"></a-video>
+      </a-entity>
+
+      <!-- Target 2: Play Video 2 -->
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-video src="#video2" width="1" height="0.5625" position="0 0 0"></a-video>
+      </a-entity>
+
+      <!-- Target 3: Show link button -->
+      <a-entity mindar-image-target="targetIndex: 2" id="linkTarget">
+        <a-plane color="#FFD700" width="0.5" height="0.2" position="0 0 0"></a-plane>
+      </a-entity>
+
+      <!-- Target 4: Show location button -->
+      <a-entity mindar-image-target="targetIndex: 3" id="locationTarget">
+        <a-plane color="#FFD700" width="0.5" height="0.2" position="0 0 0"></a-plane>
+      </a-entity>
+
+      <a-camera position="0 0 0"></a-camera>
+    </a-scene>
+
+    <script>
+      const video1 = document.querySelector("#video1");
+      const video2 = document.querySelector("#video2");
+      const overlayButton = document.getElementById("overlayButton");
+      const locationButton = document.getElementById("locationButton");
+
+      const sceneEl = document.querySelector("a-scene");
+
+      sceneEl.addEventListener("targetFound", (event) => {
+        const index = event.detail.index;
+
+        if (index === 0) {
+          video1.play();
+        } else if (index === 1) {
+          video2.play();
+        } else if (index === 2) {
+          overlayButton.style.display = "block";
+        } else if (index === 3) {
+          locationButton.style.display = "block";
+        }
+      });
+
+      sceneEl.addEventListener("targetLost", (event) => {
+        const index = event.detail.index;
+
+        if (index === 0) {
+          video1.pause();
+        } else if (index === 1) {
+          video2.pause();
+        } else if (index === 2) {
+          overlayButton.style.display = "none";
+        } else if (index === 3) {
+          locationButton.style.display = "none";
+        }
+      });
+
+      overlayButton.onclick = () => {
+        window.open("https://finegoldcoonoor.github.io/VP-STREET/", "_blank");
+      };
+
+      locationButton.onclick = () => {
+        window.open("https://maps.app.goo.gl/iisfZKPDecXVo9PGA", "_blank");
+      };
+    </script>
+  </body>
+</html>
